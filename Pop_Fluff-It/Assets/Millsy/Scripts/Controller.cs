@@ -9,6 +9,17 @@ public class Controller : MonoBehaviour
     [SerializeField]
     float force;
     Vector2 jump;
+
+    public enum states
+    {
+        Grounded,
+        Jumping,
+        Falling,
+        Grinding,
+        Landing
+    }
+    public states mystate = states.Grounded;
+
     void Start()
     {
         body = this.GetComponent<Rigidbody2D>();
@@ -23,11 +34,12 @@ public class Controller : MonoBehaviour
     void Movement()
     {
         // dummy test jump
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.W) && mystate == states.Grounded)
         {
             //Debug.Log("Pressing W");
             jump = new Vector2(0, force);
             body.AddForce(jump);
+            mystate = states.Jumping;
         }
     }
 
