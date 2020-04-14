@@ -9,7 +9,10 @@ public class Controller : MonoBehaviour
     [SerializeField]
     float force;
     Vector2 jump;
+    [SerializeField]
+    int jumps;
     public states mystate = states.Grounded;
+    float jumpStartedAt;
     public enum states
     {
         Grounded,
@@ -28,6 +31,8 @@ public class Controller : MonoBehaviour
     void Start()
     {
         body = this.GetComponent<Rigidbody2D>();
+        jump = new Vector2(0, force);
+        jumps = 1;
     }
 
     // small issue with the jump. if held the jum state can stick when the player is grounded preventing further jumps
@@ -41,42 +46,60 @@ public class Controller : MonoBehaviour
 
     public void Movement()
     {
-        // dummy test jump with real jump
-        if (Input.GetKeyDown(KeyCode.W) && mystate == states.Grounded || Input.touchCount > 0 && mystate == states.Grounded)
+        // jumping from ground and rails.
+        // add another check to makes sure the player has jumps?
+        if (Input.GetKeyDown(KeyCode.Space) && mystate != states.Jumping)
         {
             Jump();
             mystate = states.Jumping;
+            jumpStartedAt = Time.time * 1000;
         }
-        else if (Input.GetKeyDown(KeyCode.W) && mystate == states.Grinding || Input.touchCount > 0 && mystate == states.Grinding)
+        else if (Input.GetKeyDown(KeyCode.Space) && mystate == states.Grinding || Input.touchCount > 0 && mystate == states.Grinding)
         {
             Jump();
-            mystate = states.Jumping;
+            mystate = states.Grinding;
         }
     }
 
     // method used for when a button is pressed.
     void Jump()
     {
-        //onGround = Physics2D.OverlapCircle(checkOnGround.position, checkCollider, thisIsGround);
-        
-        jump = new Vector2(0, force);
         body.AddForce(jump);
+        jumps--;
     }
 
     // test if the curcles overlap to set the state of the object to grounded
     public void OnGround()
     {
+        Debug.Log("check on ground");
+        if ((Time.time * 1000) - jumpStartedAt < 1000)
+        {
+            Debug.Log("I'm still jumping!!!");
+            return;
+        }
+
         if (Physics2D.OverlapCircle(checkOnGround.position, checkCollider, ground))
         {
-          mystate = states.Grounded;
+             mystate = states.Grounded;
+             jumps = 1;
+            Debug.Log("grinding");
         }
     }
     //if body his rail you cant jump
     public void OnRail()
     {
+        Debug.Log("check on rail");
+        if ((Time.time * 1000) - jumpStartedAt < 1000)
+        {
+            Debug.Log("I'm still jumping!!!");
+            return;
+        }
+
         if (Physics2D.OverlapCircle(checkOnRail.position, checkCollider, rail))
         {
             mystate = states.Grinding;
+            jumps = 1;
+            Debug.Log("Grinding");
         }
     }
 }
