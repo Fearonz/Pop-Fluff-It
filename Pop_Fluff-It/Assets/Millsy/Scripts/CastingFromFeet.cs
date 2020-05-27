@@ -5,10 +5,12 @@ using UnityEngine;
 public class CastingFromFeet : MonoBehaviour
 {
     [SerializeField]
-    float direction = .1f;
+    float duration;
     RaycastHit2D hit = new RaycastHit2D();
     Controller controller;
-    // Start is called before the first frame update
+    public Transform castFrom;
+    Transform temp;
+
     void Start()
     {
         controller = GetComponent<Controller>();
@@ -19,36 +21,24 @@ public class CastingFromFeet : MonoBehaviour
     void Update()
     {
         DrawRayToGround();
-
-    }
-
-    void CheckIfGrounded()
-    {
-        if (controller.mystate != Controller.states.Grounded)
+        if (hit != default)
         {
-
+            RotatePlayerToGround();
         }
-
     }
 
-    // method for casting a ray downwards. draw only goes till it colides.
     void DrawRayToGround()
     {
+        hit = Physics2D.Raycast(castFrom.position, -transform.up, duration);
+        if (hit != default)
+        {
+            Debug.DrawLine(castFrom.position, hit.point,Color.green);
+        }
+    }
 
-        if (controller.mystate != Controller.states.Grounded)
-        {
-            hit = Physics2D.Raycast(transform.position - new Vector3(0, .5f, 0), -transform.up, direction);
-        }
-        else
-        {
-            hit = default;
-        }
-        
-        if (hit.collider.tag == "Ground")
-        {
-            controller.mystate = Controller.states.Grounded;
-            Debug.Log("Coliding with ground");
-        }
-
+    void RotatePlayerToGround()
+    {
+        temp.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(-hit.normal), 1f);
+        transform.rotation = new Quaternion(temp.rotation.x, temp.rotation.y, 0, temp.rotation.w);
     }
 }
